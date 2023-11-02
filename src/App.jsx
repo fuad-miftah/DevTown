@@ -3,30 +3,35 @@ import styled from 'styled-components';
 import Product from './Product';
 import productsData from './productsData';
 
+const initialFilters = {
+  sortBy: 'price',
+  categoryFilter: 'all',
+  minPrice: '',
+  maxPrice: '',
+};
+
 const App = () => {
   const [products, setProducts] = useState(productsData);
-  const [sortBy, setSortBy] = useState('price');
-  const [categoryFilter, setCategoryFilter] = useState('all');
   const [page, setPage] = useState(1);
-  const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(Number.MAX_VALUE);
-  const productsPerPage = 6;
+  const [filters, setFilters] = useState(initialFilters);
+  const productsPerPage = 9;
 
   const handleCategoryFilterChange = (newCategory) => {
-    setCategoryFilter(newCategory);
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      categoryFilter: newCategory,
+    }));
   };
 
   const handleApplyFilters = () => {
-    // Filtering logic here
-    const filteredProducts = products
-      .filter(
-        (product) =>
-          (categoryFilter === 'all' || product.category === categoryFilter) &&
-          product.price >= minPrice &&
-          product.price <= maxPrice
+    const filteredProducts = productsData
+      .filter((product) =>
+        (filters.categoryFilter === 'all' || product.category === filters.categoryFilter) &&
+        (filters.minPrice === '' || product.price >= parseFloat(filters.minPrice)) &&
+        (filters.maxPrice === '' || product.price <= parseFloat(filters.maxPrice))
       )
       .sort((a, b) => {
-        if (sortBy === 'price') {
+        if (filters.sortBy === 'price') {
           return a.price - b.price;
         }
         return a.title.localeCompare(b.title);
@@ -37,11 +42,8 @@ const App = () => {
   };
 
   const handleResetFilters = () => {
-    setCategoryFilter('all');
-    setMinPrice(0);
-    setMaxPrice(Number.MAX_VALUE);
-    setSortBy('price');
-    setProducts(productsData); // Reset products to the original data
+    setFilters(initialFilters);
+    setProducts(productsData);
   };
 
   const totalPages = Math.ceil(products.length / productsPerPage);
@@ -49,49 +51,70 @@ const App = () => {
 
   return (
     <Container>
-      <Content>
-        <Header>
-          <h1>Product List</h1>
-        </Header>
-        <FilterContainer>
-          <FilterRow>
-            <label>Category:</label>
-            <select onChange={(e) => handleCategoryFilterChange(e.target.value)}>
+      <FilterContainer>
+        <FilterRow>
+          <LabelText>Category</LabelText>
+          <div>
+            <StyledSelect
+              onChange={(e) => handleCategoryFilterChange(e.target.value)}
+              value={filters.categoryFilter}
+            >
               <option value="all">All</option>
               <option value="electronics">Electronics</option>
               <option value="clothing">Clothing</option>
               <option value="books">Books</option>
-            </select>
-          </FilterRow>
-          <FilterRow>
-            <label>Price Range:</label>
-            <input
+            </StyledSelect>
+          </div>
+        </FilterRow>
+        <FilterRow>
+          <LabelText>Price Range</LabelText>
+          <div>
+            <StyledInput
               type="number"
               placeholder="Min Price"
-              onChange={(e) => setMinPrice(parseFloat(e.target.value))}
+              onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
+              value={filters.minPrice}
+              key="minPrice"
             />
-            <input
+          </div>
+          <div>
+            <StyledLabel></StyledLabel>
+            <StyledInput
               type="number"
               placeholder="Max Price"
-              onChange={(e) => setMaxPrice(parseFloat(e.target.value))}
+              onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
+              value={filters.maxPrice}
+              key="maxPrice"
             />
-          </FilterRow>
-          <FilterRow>
-            <label>Sort by:</label>
-            <select onChange={(e) => setSortBy(e.target.value)}>
+          </div>
+        </FilterRow>
+        <FilterRow>
+          <LabelText>Sort by</LabelText>
+          <div>
+            <StyledSelect
+              onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
+              value={filters.sortBy}
+            >
               <option value="price">Price</option>
               <option value="title">Title</option>
-            </select>
-          </FilterRow>
-          <FilterRow>
-            <button onClick={handleApplyFilters}>Apply</button>
-            <button onClick={handleResetFilters}>Reset</button>
-          </FilterRow>
-        </FilterContainer>
+            </StyledSelect>
+          </div>
+        </FilterRow>
+        <ButtonRow>
+          <StyledButton onClick={handleApplyFilters}>Apply</StyledButton>
+          <StyledButton onClick={handleResetFilters}>Reset</StyledButton>
+        </ButtonRow>
+      </FilterContainer>
+      <Content>
+        <Header>
+          <BigHeader>Product List</BigHeader>
+        </Header>
         <ProductsContainer>
-          {displayedProducts.length > 0
-            ? displayedProducts.map((product) => <Product key={product.id} product={product} />)
-            : <p>No products match the selected filters.</p>}
+          {displayedProducts.length > 0 ? (
+            displayedProducts.map((product) => <Product key={product.id} product={product} />)
+          ) : (
+            <NoProductsMessage>Bigger Text: No products match the selected filters.</NoProductsMessage>
+          )}
         </ProductsContainer>
         <Pagination>
           {Array.from({ length: totalPages }).map((_, index) => (
@@ -116,6 +139,69 @@ const Container = styled.div`
   flex-direction: row;
 `;
 
+const FilterContainer = styled.div`
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 10px;
+  background-color: #f2f2f2;
+  padding: 20px;
+  border-radius: 10px;
+`;
+
+const FilterRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: 10px;
+`;
+
+const LabelText = styled.label`
+  margin: 5px 0;
+`;
+
+const StyledSelect = styled.select`
+  width: 200px;
+  margin: 5px 0;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+`;
+
+const StyledInput = styled.input`
+  width: 100%;
+  margin: 5px 0;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+`;
+
+const StyledLabel = styled.label``;
+
+const ButtonRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 10px;
+  width: 100%;
+`;
+
+const StyledButton = styled.button`
+  width: 48%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+`;
+
 const Content = styled.div`
   flex: 1;
   padding-left: 20px;
@@ -128,35 +214,20 @@ const Header = styled.div`
   margin-bottom: 20px;
 `;
 
-const FilterContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const FilterRow = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin-bottom: 10px;
-
-  label {
-    margin-right: 10px;
-  }
-
-  select,
-  input {
-    margin-right: 10px;
-  }
-
-  button {
-    margin-right: 10px;
-  }
+const BigHeader = styled.h1`
+  font-size: 36px; /* Adjust the font size as needed */
 `;
 
 const ProductsContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 60px;
+`;
+
+const NoProductsMessage = styled.p`
+  font-size: 20px; /* Adjust the font size as needed */
+  color: red;
+  font-weight: bold;
 `;
 
 const Pagination = styled.div`

@@ -2,7 +2,7 @@ const productsData = [
     {
       id: 1,
       title: 'Product 1',
-      description: 'Description for Product 1',
+      description: 'Description for Product 1Description for Product 1Description for Product 1Description for Product 1Description for Product 1Description for Product 1',
       price: 49.99,
       image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXaNPGxBAMRMDmfPqY9aYHJqp0K1ar3NlOb4gehO4B&s',
       category: 'electronics',
