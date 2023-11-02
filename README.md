@@ -27,9 +27,9 @@ Ensure that you have the following software and dependencies installed:
 
 1. Clone the repository:
 
-   ```
-   git clone https://github.com/fuad-miftah/DevTown.git
-   ```
+```
+git clone https://github.com/fuad-miftah/DevTown.git
+```
    
 2. Change directory to the project folder:
    
